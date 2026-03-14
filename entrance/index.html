@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEU Library – Visitor Entry</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+  <canvas id="bgCanvas"></canvas>
+  <div class="side-deco right">
+    <svg viewBox="0 0 28 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="2"   x2="4"  y2="2"   stroke="rgba(125,211,252,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="4"  y1="2"   x2="4"  y2="80"  stroke="rgba(125,211,252,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="4"  y1="130" x2="20" y2="130" stroke="rgba(125,211,252,0.5)" stroke-width="1"   stroke-linecap="round"/>
+      <line x1="4"  y1="180" x2="4"  y2="258" stroke="rgba(125,211,252,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="4"  y1="258" x2="20" y2="258" stroke="rgba(125,211,252,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="4" cy="130" r="2.5" fill="rgba(125,211,252,0.6)"/>
+    </svg>
+  </div>
+
+  <div class="side-line left"></div>
+  <div class="side-line right"></div>
+
+  <header class="header">
+    <div class="header-logo">
+      <div class="neu-logo-wrap"><img src="/images/neu-logo.png" alt="NEU Logo" class="neu-logo" /></div>
+      <span class="title-main">NEW ERA UNIVERSITY</span>
+    </div>
+    <div class="header-center">
+      <span class="title-sub">Library Information System</span>
+    </div>
+    <div class="header-clock">
+      <div class="clock-time" id="clockTime">00:00:00</div>
+      <div class="clock-date" id="clockDate">Loading...</div>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- IDLE -->
+    <section class="screen" id="screenIdle">
+      <div class="hero">
+        <p class="hero-eyebrow">GOOD DAY! YOU ARE AT</p>
+        <h1 class="hero-title">
+          <span class="hero-line-1">WELCOME TO</span>
+          <span class="hero-line-2">NEU LIBRARY</span>
+        </h1>
+        <p class="hero-subtitle">Quezon City, Philippines · Est. 1975</p>
+      </div>
+      <div class="rfid-ring">
+        <div class="rfid-pulse"></div>
+        <div class="rfid-pulse pulse-2"></div>
+        <div class="rfid-pulse pulse-3"></div>
+        <div class="rfid-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <rect x="20" y="25" width="40" height="30" rx="4" stroke="currentColor" stroke-width="2.5"/>
+            <rect x="27" y="32" width="12" height="16" rx="2" fill="currentColor" opacity="0.6"/>
+            <line x1="45" y1="34" x2="55" y2="34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="45" y1="40" x2="55" y2="40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="45" y1="46" x2="52" y2="46" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 20 Q10 10 20 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <path d="M70 20 Q70 10 60 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <path d="M10 60 Q10 70 20 70" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <path d="M70 60 Q70 70 60 70" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Login method toggle -->
+      <div class="login-toggle">
+        <button class="toggle-btn active" id="toggleId">🪪 School ID</button>
+        <button class="toggle-btn" id="toggleEmail">✉️ Email</button>
+      </div>
+
+      <!-- Single input group — changes based on toggle -->
+      <div class="id-input-group" id="inputGroup">
+        <input type="text" id="mainInput" class="rfid-input" placeholder="School ID  e.g. 26-00123-001" maxlength="100" autocomplete="off" spellcheck="false"/>
+        <button class="scan-btn" id="mainBtn">SCAN</button>
+      </div>
+    </section>
+
+    <!-- SCANNING -->
+    <section class="screen hidden" id="screenScanning">
+      <div class="scanning-anim">
+        <div class="scan-line"></div>
+        <div class="scan-dots"><span></span><span></span><span></span></div>
+      </div>
+      <p class="scanning-title">Reading ID Card</p>
+      <p class="scanning-text">Please hold still...</p>
+    </section>
+
+    <!-- WELCOME -->
+    <section class="screen hidden" id="screenWelcome">
+      <div class="first-timer-badge hidden" id="firstTimerBadge">
+        <span class="badge-emoji">🎉</span>
+        <span class="badge-text">FIRST TIME VISITOR — WELCOME TO NEU LIBRARY!</span>
+      </div>
+      <div class="welcome-hero">
+        <p class="welcome-hero-label" id="welcomeGreeting">WELCOME BACK,</p>
+        <h2 class="welcome-hero-name" id="welcomeName">Juan dela Cruz</h2>
+        <p class="welcome-hero-msg">Great to see you! Enjoy your time at the library.</p>
+      </div>
+      <div class="welcome-card">
+        <div class="welcome-avatar" id="welcomeAvatar">JD</div>
+        <div class="welcome-info">
+          <div class="welcome-college" id="welcomeCollege">College of Informatics and Computing Studies</div>
+          <div class="welcome-type" id="welcomeType">Student</div>
+        </div>
+        <div class="welcome-stats">
+          <div class="stat-item">
+            <span class="stat-val" id="streakNumber">0</span>
+            <span class="stat-lbl">🔥 Streak</span>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-item">
+            <span class="stat-val" id="streakTotal">0</span>
+            <span class="stat-lbl">📅 Visits</span>
+          </div>
+        </div>
+      </div>
+      <div class="purpose-section">
+        <p class="purpose-label">What is your purpose of visit today?</p>
+        <div class="purpose-tabbar">
+          <button class="purpose-card" data-purpose="Reading Books">
+            <span class="purpose-icon">📚</span>
+            <span class="purpose-text">Reading Books</span>
+          </button>
+          <button class="purpose-card" data-purpose="Thesis Research">
+            <span class="purpose-icon">🔬</span>
+            <span class="purpose-text">Thesis Research</span>
+          </button>
+          <button class="purpose-card" data-purpose="Use of Computer">
+            <span class="purpose-icon">💻</span>
+            <span class="purpose-text">Use of Computer</span>
+          </button>
+          <button class="purpose-card" data-purpose="Doing Assignments">
+            <span class="purpose-icon">📝</span>
+            <span class="purpose-text">Doing Assignments</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUCCESS -->
+    <section class="screen hidden" id="screenSuccess">
+      <div class="success-circle">
+        <svg class="checkmark" viewBox="0 0 52 52">
+          <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <div class="success-content">
+        <h2 class="success-title">You're all set!</h2>
+        <p class="success-subtitle">ENTRY LOGGED SUCCESSFULLY</p>
+        <p class="success-purpose" id="successPurpose">Reading Books</p>
+        <p class="success-msg">Enjoy your time at the NEU Library 📖</p>
+      </div>
+      <div class="success-timer">
+        Returning to main screen in <span class="countdown" id="countdown">6</span>s
+      </div>
+
+    </section>
+
+    <!-- ERROR -->
+    <section class="screen hidden" id="screenError">
+      <div class="error-icon-wrap"><span class="error-icon">⚠️</span></div>
+      <div class="error-content">
+        <h2 class="error-title">ID Not Found</h2>
+        <p class="error-msg" id="errorMsg">Please see the librarian for assistance.</p>
+      </div>
+      <button class="retry-btn" id="retryBtn">← Try Again</button>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>NEU Library Visitor System</span>
+    <span>New Era University — Quezon City &nbsp;•&nbsp; © 2025</span>
+  </footer>
+
+  <!-- Countdown progress bar — fixed to bottom of page -->
+  <div class="countdown-bar-wrap hidden" id="countdownBarWrap">
+    <div class="countdown-bar" id="countdownBar"></div>
+  </div>
+
+  <!-- ─── ADMIN LOGIN MODAL ─── -->
+  <div class="admin-modal-overlay hidden" id="adminModalOverlay">
+    <div class="admin-modal" id="adminModal">
+      <div class="admin-modal-header">
+        <div class="admin-modal-logo">
+          <img src="/images/neu-logo.png" alt="NEU" />
+        </div>
+        <h2 class="admin-modal-title">Administrator Access</h2>
+        <p class="admin-modal-sub">NEU Library Management System</p>
+        <button class="admin-modal-close" id="adminModalClose">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-input-wrap">
+          <span class="admin-input-icon">👤</span>
+          <input type="text" id="adminUsername" class="admin-input" placeholder="Username" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="admin-input-wrap">
+          <span class="admin-input-icon">🔒</span>
+          <input type="password" id="adminPassword" class="admin-input" placeholder="Password" />
+        </div>
+        <p class="admin-error hidden" id="adminError">Invalid username or password.</p>
+        <button class="admin-login-btn" id="adminLoginBtn">
+          <span id="adminLoginBtnText">Sign In</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

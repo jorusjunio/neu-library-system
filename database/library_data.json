@@ -1,0 +1,143 @@
+{
+  "students": {
+    "2021-00001": {
+      "school_id": "2021-00001",
+      "name": "Juan dela Cruz",
+      "college": "College of Computer Studies",
+      "type": "Student",
+      "first_visit_date": "2026-03-13",
+      "total_visits": 3,
+      "current_streak": 1,
+      "longest_streak": 1,
+      "last_visit_date": "2026-03-13"
+    },
+    "2021-00002": {
+      "school_id": "2021-00002",
+      "name": "Maria Santos",
+      "college": "College of Nursing",
+      "type": "Student",
+      "first_visit_date": "2026-03-13",
+      "total_visits": 1,
+      "current_streak": 1,
+      "longest_streak": 1,
+      "last_visit_date": "2026-03-13"
+    },
+    "2020-00003": {
+      "school_id": "2020-00003",
+      "name": "Pedro Reyes",
+      "college": "College of Engineering",
+      "type": "Student",
+      "first_visit_date": "2026-03-13",
+      "total_visits": 1,
+      "current_streak": 1,
+      "longest_streak": 1,
+      "last_visit_date": "2026-03-13"
+    },
+    "2019-00004": {
+      "school_id": "2019-00004",
+      "name": "Ana Garcia",
+      "college": "College of Business Administration",
+      "type": "Student",
+      "first_visit_date": null,
+      "total_visits": 0,
+      "current_streak": 0,
+      "longest_streak": 0,
+      "last_visit_date": null
+    },
+    "FAC-0001": {
+      "school_id": "FAC-0001",
+      "name": "Prof. Roberto Cruz",
+      "college": "College of Computer Studies",
+      "type": "Faculty",
+      "first_visit_date": "2026-03-13",
+      "total_visits": 1,
+      "current_streak": 1,
+      "longest_streak": 1,
+      "last_visit_date": "2026-03-13"
+    },
+    "EMP-0001": {
+      "school_id": "EMP-0001",
+      "name": "Ms. Ligaya Flores",
+      "college": "Library Office",
+      "type": "Employee",
+      "first_visit_date": null,
+      "total_visits": 0,
+      "current_streak": 0,
+      "longest_streak": 0,
+      "last_visit_date": null
+    },
+    "2022-00005": {
+      "school_id": "2022-00005",
+      "name": "Carlos Mendoza",
+      "college": "College of Arts and Sciences",
+      "type": "Student",
+      "first_visit_date": null,
+      "total_visits": 0,
+      "current_streak": 0,
+      "longest_streak": 0,
+      "last_visit_date": null
+    },
+    "2023-00006": {
+      "school_id": "2023-00006",
+      "name": "Sofia Bautista",
+      "college": "College of Education",
+      "type": "Student",
+      "first_visit_date": null,
+      "total_visits": 0,
+      "current_streak": 0,
+      "longest_streak": 0,
+      "last_visit_date": null
+    }
+  },
+  "visits": [
+    {
+      "id": 1,
+      "school_id": "2021-00001",
+      "purpose": "Use of Computer",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:23:16",
+      "created_at": "2026-03-13T04:23:16.202Z"
+    },
+    {
+      "id": 2,
+      "school_id": "2021-00002",
+      "purpose": "Doing Assignments",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:23:33",
+      "created_at": "2026-03-13T04:23:33.944Z"
+    },
+    {
+      "id": 3,
+      "school_id": "2020-00003",
+      "purpose": "Doing Assignments",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:23:47",
+      "created_at": "2026-03-13T04:23:47.724Z"
+    },
+    {
+      "id": 4,
+      "school_id": "FAC-0001",
+      "purpose": "Reading Books",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:23:52",
+      "created_at": "2026-03-13T04:23:52.269Z"
+    },
+    {
+      "id": 5,
+      "school_id": "2021-00001",
+      "purpose": "Reading Books",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:24:04",
+      "created_at": "2026-03-13T04:24:04.998Z"
+    },
+    {
+      "id": 6,
+      "school_id": "2021-00001",
+      "purpose": "Thesis Research",
+      "visit_date": "2026-03-13",
+      "visit_time": "12:24:08",
+      "created_at": "2026-03-13T04:24:08.430Z"
+    }
+  ],
+  "nextVisitId": 7
+}

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEU Library – Admin Dashboard</title>
+  <link rel="stylesheet" href="/admin/css/admin.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-wrap"><img src="/images/neu-logo.png" alt="NEU" class="sidebar-neu-logo" /></div>
+      <div>
+        <div class="logo-title">NEU Library</div>
+        <div class="logo-sub">Admin Dashboard</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-tab="overview">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </a>
+      <a class="nav-item" data-tab="logs">
+        <span class="nav-icon">📋</span><span>Visitor Logs</span>
+      </a>
+      <a class="nav-item" data-tab="topvisitors">
+        <span class="nav-icon">🏆</span><span>Top Visitors</span>
+      </a>
+      <a class="nav-item" data-tab="students">
+        <span class="nav-icon">👥</span><span>Students</span>
+      </a>
+      <a class="nav-item" data-tab="reports">
+        <span class="nav-icon">⚙️</span><span>Reports & Settings</span>
+      </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-status">
+        <span class="status-dot"></span>
+        <span class="status-text">System Online</span>
+      </div>
+      <a class="nav-item entrance-link" href="/entrance/index.html">
+        <span class="nav-icon">🚪</span><span>Entrance Screen</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <div class="admin-main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">Overview</h1>
+        <p class="page-sub">NEU Main Library — Real-time Statistics</p>
+      </div>
+      <div class="topbar-right">
+        <div class="date-filters" id="dateFilters">
+          <button class="filter-btn active" data-range="today">Today</button>
+          <button class="filter-btn" data-range="week">This Week</button>
+          <button class="filter-btn" data-range="month">This Month</button>
+          <button class="filter-btn" data-range="custom">Custom</button>
+        </div>
+        <div class="custom-range hidden" id="customRange">
+          <input type="date" id="dateStart" class="date-input" />
+          <span class="date-sep">→</span>
+          <input type="date" id="dateEnd" class="date-input" />
+          <button class="apply-btn" id="applyRange">Apply</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─── OVERVIEW TAB ─── -->
+    <div class="tab-content active" id="tabOverview">
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon-wrap blue">👥</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-label">Total Visits</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap gold">🪪</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statUnique">—</div>
+            <div class="stat-label">Unique Visitors</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap green">📚</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTopPurpose">—</div>
+            <div class="stat-label">Top Purpose</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap purple">🏛️</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTopCollege">—</div>
+            <div class="stat-label">Top College</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card span-2">
+          <div class="chart-header">
+            <h3 class="chart-title">Visits Per Day</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartByDay"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Purpose Breakdown</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartByPurpose"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Visits by Hour</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartByHour"></canvas></div>
+        </div>
+        <div class="chart-card span-2">
+          <div class="chart-header">
+            <h3 class="chart-title">Top Colleges</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartByCollege"></canvas></div>
+        </div>
+      </div>
+      <!-- HEATMAP -->
+      <div class="chart-card heatmap-card" style="margin-top:14px">
+        <div class="chart-header">
+          <h3 class="chart-title">Monthly Visit Heatmap</h3>
+          <span class="heatmap-legend"><span class="hm-dot low"></span>Low <span class="hm-dot mid"></span>Mid <span class="hm-dot high"></span>High</span>
+        </div>
+        <div class="heatmap-wrap" id="heatmapWrap"></div>
+      </div>
+    </div>
+
+    <!-- ─── LOGS TAB ─── -->
+    <div class="tab-content hidden" id="tabLogs">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="logSearch" placeholder="Search by name, college, or purpose..." />
+        </div>
+        <span class="record-count" id="logCount">— entries</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>School ID</th>
+              <th>Name</th>
+              <th>College / Office</th>
+              <th>Type</th>
+              <th>Purpose</th>
+              <th>Date</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody">
+            <tr><td colspan="8" class="table-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── TOP VISITORS TAB ─── -->
+    <div class="tab-content hidden" id="tabTopvisitors">
+      <div class="top-visitors-list" id="topVisitorsGrid">
+        <div class="table-empty">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── STUDENTS TAB ─── -->
+    <div class="tab-content hidden" id="tabStudents">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="studentSearch" placeholder="Search by name, ID, or college..." />
+        </div>
+        <div class="toolbar-right">
+          <span class="record-count" id="studentCount">— students</span>
+          <div class="filter-toggle">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="active">Active</button>
+            <button class="filter-pill" data-filter="blocked">Blocked</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>School ID</th>
+              <th>Name</th>
+              <th>College / Office</th>
+              <th>Type</th>
+              <th>Email</th>
+              <th>Total Visits</th>
+              <th>Last Visit</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr><td colspan="9" class="table-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── REPORTS & SETTINGS TAB ─── -->
+    <div class="tab-content hidden" id="tabReports">
+      <div class="settings-grid">
+
+        <div class="settings-card" data-modal="modalPdf">
+          <div class="settings-card-header">
+            <div class="settings-icon">📄</div>
+            <div><div class="settings-title">Export PDF Report</div><div class="settings-sub">Download visitor statistics as PDF</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalCsv">
+          <div class="settings-card-header">
+            <div class="settings-icon">📊</div>
+            <div><div class="settings-title">Export CSV Spreadsheet</div><div class="settings-sub">Download raw visitor logs as CSV</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalAdmin">
+          <div class="settings-card-header">
+            <div class="settings-icon">👤</div>
+            <div><div class="settings-title">Admin Accounts</div><div class="settings-sub">Change password or add admins</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalHours">
+          <div class="settings-card-header">
+            <div class="settings-icon">🕐</div>
+            <div><div class="settings-title">Library Hours</div><div class="settings-sub">Set official open and close hours</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalAnnounce">
+          <div class="settings-card-header">
+            <div class="settings-icon">📢</div>
+            <div><div class="settings-title">Announcements</div><div class="settings-sub">Set entrance screen welcome message</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalData">
+          <div class="settings-card-header">
+            <div class="settings-icon">🗑️</div>
+            <div><div class="settings-title">Data Management</div><div class="settings-sub">Clear logs or reset statistics</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalTheme">
+          <div class="settings-card-header">
+            <div class="settings-icon">🎨</div>
+            <div><div class="settings-title">Theme & Display</div><div class="settings-sub">Accent color and sidebar opacity</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalDash">
+          <div class="settings-card-header">
+            <div class="settings-icon">📈</div>
+            <div><div class="settings-title">Dashboard Preferences</div><div class="settings-sub">Default range and visible charts</div></div>
+          </div>
+        </div>
+
+        <div class="settings-card" data-modal="modalSys">
+          <div class="settings-card-header">
+            <div class="settings-icon">🏛️</div>
+            <div><div class="settings-title">System Information</div><div class="settings-sub">NEU Library system status</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ SETTINGS MODALS ═══════════════ -->
+  <div class="settings-modal-overlay hidden" id="settingsModalOverlay">
+    <div class="settings-modal" id="settingsModalBox">
+      <div class="settings-modal-head" id="settingsModalHead">
+        <div class="settings-icon" id="settingsModalIcon">📄</div>
+        <div><div class="settings-title" id="settingsModalTitle">Title</div></div>
+        <button class="settings-modal-close" id="settingsModalClose">✕</button>
+      </div>
+      <div class="settings-modal-body" id="settingsModalContent"></div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL CONTENTS (hidden templates) ─── -->
+
+  <template id="modalPdf">
+    <div class="settings-field">
+      <label class="settings-label">Date Range</label>
+      <div class="settings-row">
+        <input type="date" id="pdfDateStart" class="settings-input" style="flex:1"/>
+        <span style="color:var(--text-3);padding:0 8px">→</span>
+        <input type="date" id="pdfDateEnd" class="settings-input" style="flex:1"/>
+      </div>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Include in Report</label>
+      <div class="settings-checks">
+        <label class="check-item"><input type="checkbox" id="inclSummary" checked /> Summary Statistics</label>
+        <label class="check-item"><input type="checkbox" id="inclLogs" checked /> Visitor Logs</label>
+        <label class="check-item"><input type="checkbox" id="inclTop" /> Top Visitors</label>
+        <label class="check-item"><input type="checkbox" id="inclCollege" /> College Breakdown</label>
+      </div>
+    </div>
+    <button class="settings-btn blue" id="pdfBtn">⬇ Generate & Download PDF</button>
+  </template>
+
+  <template id="modalCsv">
+    <div class="settings-field">
+      <label class="settings-label">What to export</label>
+      <div class="settings-checks">
+        <label class="check-item"><input type="radio" name="csvType" value="all" checked /> All Logs</label>
+        <label class="check-item"><input type="radio" name="csvType" value="today" /> Today Only</label>
+        <label class="check-item"><input type="radio" name="csvType" value="week" /> This Week</label>
+        <label class="check-item"><input type="radio" name="csvType" value="month" /> This Month</label>
+      </div>
+    </div>
+    <button class="settings-btn green" id="csvBtnSettings">⬇ Download CSV</button>
+  </template>
+
+  <template id="modalAdmin">
+    <div class="settings-field">
+      <label class="settings-label">Change Password</label>
+      <input type="text" class="settings-input" id="adminUsernameField" placeholder="Username" autocomplete="off"/>
+      <input type="password" class="settings-input" id="adminNewPass" placeholder="New Password" style="margin-top:6px"/>
+      <input type="password" class="settings-input" id="adminConfirmPass" placeholder="Confirm Password" style="margin-top:6px"/>
+    </div>
+    <p class="settings-feedback hidden" id="passFeedback"></p>
+    <button class="settings-btn blue" id="changePassBtn">Update Password</button>
+    <div class="settings-divider"></div>
+    <div class="settings-field">
+      <label class="settings-label">Add New Admin</label>
+      <input type="text" class="settings-input" id="newAdminUser" placeholder="Username" autocomplete="off"/>
+      <input type="text" class="settings-input" id="newAdminName" placeholder="Full Name" style="margin-top:6px" autocomplete="off"/>
+      <input type="password" class="settings-input" id="newAdminPass" placeholder="Password" style="margin-top:6px"/>
+    </div>
+    <p class="settings-feedback hidden" id="addAdminFeedback"></p>
+    <button class="settings-btn green" id="addAdminBtn">Add Admin</button>
+  </template>
+
+  <template id="modalHours">
+    <div class="settings-field">
+      <label class="settings-label">Weekdays (Mon–Fri)</label>
+      <div class="settings-row">
+        <input type="time" class="settings-input" id="wdOpen" value="07:00" style="flex:1"/>
+        <span style="color:var(--text-3);padding:0 8px">to</span>
+        <input type="time" class="settings-input" id="wdClose" value="20:00" style="flex:1"/>
+      </div>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Saturday</label>
+      <div class="settings-row">
+        <input type="time" class="settings-input" id="satOpen" value="08:00" style="flex:1"/>
+        <span style="color:var(--text-3);padding:0 8px">to</span>
+        <input type="time" class="settings-input" id="satClose" value="17:00" style="flex:1"/>
+      </div>
+    </div>
+    <label class="check-item"><input type="checkbox" id="sunClosed" checked /> Closed on Sundays</label>
+    <p class="settings-feedback hidden" id="hoursFeedback"></p>
+    <button class="settings-btn blue" id="saveHoursBtn">Save Library Hours</button>
+  </template>
+
+  <template id="modalAnnounce">
+    <div class="settings-field">
+      <label class="settings-label">Welcome Message</label>
+      <textarea class="settings-textarea" id="announcementText" placeholder="e.g. Welcome to NEU Library! Quiet hours: 8AM–12PM"></textarea>
+    </div>
+    <label class="settings-toggle">
+      <input type="checkbox" id="announcementEnabled"/>
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-label">Show on Entrance Screen</span>
+    </label>
+    <p class="settings-feedback hidden" id="announceFeedback"></p>
+    <button class="settings-btn blue" id="saveAnnouncementBtn">Save Announcement</button>
+  </template>
+
+  <template id="modalData">
+    <div class="settings-field">
+      <label class="settings-label">Clear Visit Logs</label>
+      <div class="settings-checks">
+        <label class="check-item"><input type="radio" name="clearType" value="old" checked /> Older than 1 year</label>
+        <label class="check-item"><input type="radio" name="clearType" value="month" /> Older than 1 month</label>
+        <label class="check-item"><input type="radio" name="clearType" value="all" /> All logs ⚠️</label>
+      </div>
+    </div>
+    <button class="settings-btn danger" id="clearLogsBtn">🗑️ Clear Selected Logs</button>
+    <div class="settings-divider"></div>
+    <p style="font-size:12px;color:var(--text-3);line-height:1.5">Reset all streaks to 0. Total visits preserved.</p>
+    <button class="settings-btn danger" id="resetStreaksBtn">🔄 Reset All Streaks</button>
+  </template>
+
+  <template id="modalTheme">
+    <div class="settings-field">
+      <label class="settings-label">Accent Color</label>
+      <div class="color-picker-row">
+        <div class="color-swatch active" data-color="#4a9eff" style="background:#4a9eff"></div>
+        <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa"></div>
+        <div class="color-swatch" data-color="#4ade80" style="background:#4ade80"></div>
+        <div class="color-swatch" data-color="#f0c040" style="background:#f0c040"></div>
+        <div class="color-swatch" data-color="#f87171" style="background:#f87171"></div>
+        <div class="color-swatch" data-color="#fb923c" style="background:#fb923c"></div>
+        <input type="text" id="customColorPicker" class="custom-color-input" placeholder="#hex" maxlength="7" spellcheck="false"/>
+      </div>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Sidebar Opacity &nbsp;<span class="range-val" id="sidebarOpacityVal">70%</span></label>
+      <input type="range" class="settings-range" id="sidebarOpacity" min="20" max="95" value="70"/>
+    </div>
+    <button class="settings-btn blue" id="saveThemeBtn">Apply & Save Theme</button>
+  </template>
+
+  <template id="modalDash">
+    <div class="settings-field">
+      <label class="settings-label">Default Date Range</label>
+      <div class="settings-checks">
+        <label class="check-item"><input type="radio" name="defRange" value="today" checked /> Today</label>
+        <label class="check-item"><input type="radio" name="defRange" value="week" /> This Week</label>
+        <label class="check-item"><input type="radio" name="defRange" value="month" /> This Month</label>
+      </div>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Visible Charts</label>
+      <div class="settings-checks">
+        <label class="check-item"><input type="checkbox" id="showChartDay" checked /> Visits Per Day</label>
+        <label class="check-item"><input type="checkbox" id="showChartPurpose" checked /> Purpose Breakdown</label>
+        <label class="check-item"><input type="checkbox" id="showChartHour" checked /> Visits by Hour</label>
+        <label class="check-item"><input type="checkbox" id="showChartCollege" checked /> Top Colleges</label>
+        <label class="check-item"><input type="checkbox" id="showHeatmap" checked /> Monthly Heatmap</label>
+      </div>
+    </div>
+    <button class="settings-btn blue" id="saveDashPrefsBtn">Save Preferences</button>
+  </template>
+
+  <template id="modalSys">
+    <div class="info-row"><span class="info-key">System</span><span class="info-val">NEU Library v2.0</span></div>
+    <div class="info-row"><span class="info-key">Institution</span><span class="info-val">New Era University</span></div>
+    <div class="info-row"><span class="info-key">Location</span><span class="info-val">Quezon City, Philippines</span></div>
+    <div class="info-row"><span class="info-key">Database</span><span class="info-val">MySQL — Connected</span></div>
+    <div class="info-row"><span class="info-key">Realtime</span><span class="info-val" style="color:var(--green)">● SSE Active</span></div>
+    <div class="info-row"><span class="info-key">Version</span><span class="info-val">2.0.0</span></div>
+  </template>
+
+  <!-- ─── CONFIRM BLOCK MODAL ─── -->
+  <div class="modal-overlay hidden" id="blockModalOverlay">
+    <div class="modal-card" id="blockModal">
+      <div class="modal-icon" id="blockModalIcon">🚫</div>
+      <h3 class="modal-title" id="blockModalTitle">Block Visitor</h3>
+      <p class="modal-msg" id="blockModalMsg">Are you sure you want to block this visitor?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="blockModalCancel">Cancel</button>
+        <button class="modal-btn confirm" id="blockModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-layer"><div class="bg-image"></div><div class="bg-overlay"></div><canvas id="bgCanvas"></canvas></div>
+
+  <script>
+// ─── AURORA CANVAS ───────────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, orbs = [], particles = [], t = 0;
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+  function createOrb() {
+    const colors = [[74,158,255],[100,80,220],[52,211,153],[167,139,250],[125,211,252]];
+    const c = colors[Math.floor(Math.random()*colors.length)];
+    return { x:Math.random()*W, y:Math.random()*H, r:Math.random()*260+140,
+      dx:(Math.random()-0.5)*0.3, dy:(Math.random()-0.5)*0.25,
+      color:c, alpha:Math.random()*0.055+0.02,
+      ps:Math.random()*0.006+0.002, po:Math.random()*Math.PI*2 };
+  }
+
+  function createParticle() {
+    return { x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.2+0.3,
+      dx:(Math.random()-0.5)*0.12, dy:(Math.random()-0.5)*0.12,
+      alpha:Math.random()*0.45+0.08, ts:Math.random()*0.018+0.004, to:Math.random()*Math.PI*2 };
+  }
+
+  function init() {
+    resize();
+    orbs = Array.from({length:6}, createOrb);
+    particles = Array.from({length:90}, createParticle);
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H); t+=0.016;
+    for (const o of orbs) {
+      const pulse = 1 + Math.sin(t*o.ps*60+o.po)*0.15;
+      const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r*pulse);
+      g.addColorStop(0, `rgba(${o.color},${o.alpha})`);
+      g.addColorStop(0.5, `rgba(${o.color},${o.alpha*0.4})`);
+      g.addColorStop(1, `rgba(${o.color},0)`);
+      ctx.beginPath(); ctx.arc(o.x,o.y,o.r*pulse,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+      o.x+=o.dx; o.y+=o.dy;
+      if(o.x<-o.r) o.x=W+o.r; if(o.x>W+o.r) o.x=-o.r;
+      if(o.y<-o.r) o.y=H+o.r; if(o.y>H+o.r) o.y=-o.r;
+    }
+    for (const p of particles) {
+      const tw = 0.5+0.5*Math.sin(t*p.ts*60+p.to);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${p.alpha*(0.3+0.7*tw)})`; ctx.fill();
+      p.x+=p.dx; p.y+=p.dy;
+      if(p.x<0) p.x=W; if(p.x>W) p.x=0;
+      if(p.y<0) p.y=H; if(p.y>H) p.y=0;
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  init(); draw();
+})();
+  </script>
+  <script src="/admin/js/admin.js"></script>
+</body>
+</html>
