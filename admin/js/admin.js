@@ -78,6 +78,11 @@ function initFilters() {
       activeFilters.purpose       = document.getElementById('filterPurpose').value;
       activeFilters.college       = document.getElementById('filterCollege').value;
       activeFilters.employee_type = document.getElementById('filterEmployeeType').value;
+      // Highlight active dropdowns
+      ['filterPurpose','filterCollege','filterEmployeeType'].forEach(sid => {
+        const el = document.getElementById(sid);
+        if (el) el.classList.toggle('active-filter', !!el.value);
+      });
       updateFilterClearBtn();
       loadOverview();
     });
@@ -88,6 +93,9 @@ function initFilters() {
     document.getElementById('filterPurpose').value       = '';
     document.getElementById('filterCollege').value       = '';
     document.getElementById('filterEmployeeType').value  = '';
+    ['filterPurpose','filterCollege','filterEmployeeType'].forEach(sid => {
+      document.getElementById(sid)?.classList.remove('active-filter');
+    });
     updateFilterClearBtn();
     loadOverview();
   });
