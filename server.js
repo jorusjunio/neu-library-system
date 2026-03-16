@@ -81,7 +81,7 @@ function requireAdmin(req, res, next) {
 
 // ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })
 );
 
 app.get('/auth/google/callback',
