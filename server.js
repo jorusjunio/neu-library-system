@@ -84,7 +84,7 @@ app.get('/auth/google',
 );
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/entrance/index.html?error=noaccess' }),
+  passport.authenticate('google', { failureRedirect: '/entrance/index.html?error=noaccess', failureMessage: true }),
   (req, res) => {
     if (req.user.activeRole === 'admin') return res.redirect('/admin');
     res.redirect('/entrance/index.html');
