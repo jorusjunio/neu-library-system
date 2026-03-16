@@ -1,8 +1,13 @@
+require('dotenv').config();
+
 // server.js — NEU Library Visitor Management System
-const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
-const db      = require('./database/db');
+const express  = require('express');
+const cors     = require('cors');
+const path     = require('path');
+const db       = require('./database/db');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session  = require('express-session');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -10,12 +15,111 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'entrance')));
-app.use('/entrance', express.static(path.join(__dirname, 'entrance')));
-app.use('/admin',    express.static(path.join(__dirname, 'admin')));
-app.use('/images',   express.static(path.join(__dirname, 'images')));
 
-// ─── SSE — Real-time broadcast ───────────────────────────────────────────────
+// ─── SESSION & PASSPORT SETUP ────────────────────────────────────────────────
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'neu-library-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
+passport.use(new GoogleStrategy({
+  clientID:     process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL:  process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  const email = profile.emails[0].value;
+
+  if (!email.endsWith('@neu.edu.ph')) {
+    return done(null, false, { message: 'Only NEU email accounts are allowed.' });
+  }
+
+  try {
+    await db.pool.query(`
+      INSERT INTO user_roles (email, google_id, name, picture, role)
+      VALUES (?, ?, ?, ?, 'user')
+      ON DUPLICATE KEY UPDATE
+        google_id = VALUES(google_id),
+        name      = VALUES(name),
+        picture   = VALUES(picture)
+    `, [email, profile.id, profile.displayName, profile.photos?.[0]?.value]);
+
+    const [rows] = await db.pool.query(
+      'SELECT * FROM user_roles WHERE email = ?', [email]
+    );
+
+    const user = rows[0];
+    return done(null, {
+      email:      user.email,
+      name:       user.name,
+      picture:    user.picture,
+      role:       user.role,
+      activeRole: user.role
+    });
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+// ─── AUTH MIDDLEWARE ──────────────────────────────────────────────────────────
+function requireAuth(req, res, next) {
+  if (req.user) return next();
+  res.redirect('/login');
+}
+
+function requireAdmin(req, res, next) {
+  if (req.user && req.user.activeRole === 'admin') return next();
+  if (req.user) return res.redirect('/welcome?error=admin_only');
+  res.redirect('/login');
+}
+
+// ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login?error=unauthorized' }),
+  (req, res) => {
+    if (req.user.activeRole === 'admin') return res.redirect('/admin');
+    res.redirect('/welcome');
+  }
+);
+
+app.get('/logout', (req, res) => {
+  req.logout(() => res.redirect('/login'));
+});
+
+app.post('/api/switch-role', (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Not authorized' });
+
+  const newRole = req.user.activeRole === 'admin' ? 'user' : 'admin';
+  req.user.activeRole = newRole;
+  req.session.passport.user.activeRole = newRole;
+
+  res.json({ activeRole: newRole });
+});
+
+app.get('/api/me', (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  res.json(req.user);
+});
+
+// ─── STATIC FILES ─────────────────────────────────────────────────────────────
+app.use('/entrance', express.static(path.join(__dirname, 'entrance')));
+app.use('/images',   express.static(path.join(__dirname, 'images')));
+app.use('/login',    express.static(path.join(__dirname, 'login')));
+app.use('/user',     express.static(path.join(__dirname, 'user')));
+
+// ─── SSE — Real-time broadcast ────────────────────────────────────────────────
 let adminClients = [];
 
 app.get('/api/events', (req, res) => {
@@ -38,9 +142,7 @@ function broadcastNewVisit(data) {
   adminClients.forEach(client => client.write(payload));
 }
 
-// ─── ENTRANCE ────────────────────────────────────────────────────────────────
-
-// Lookup by email
+// ─── ENTRANCE ─────────────────────────────────────────────────────────────────
 app.get('/api/student/email/:email', async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email).toLowerCase().trim();
@@ -53,7 +155,6 @@ app.get('/api/student/email/:email', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Lookup by school ID
 app.get('/api/student/:id', async (req, res) => {
   try {
     const student = await db.getStudentById(req.params.id.toUpperCase());
@@ -63,7 +164,6 @@ app.get('/api/student/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Record visit
 app.post('/api/visit', async (req, res) => {
   const { school_id, purpose } = req.body;
   if (!school_id || !purpose)
@@ -90,13 +190,96 @@ app.post('/api/visit', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ─── ADMIN — STATS & LOGS ────────────────────────────────────────────────────
-
+// ─── ADMIN — STATS & LOGS ─────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
   const { start, end } = req.query;
   if (!start || !end) return res.status(400).json({ error: 'start and end required.' });
   try { res.json(await db.getStatsByRange(start, end)); }
   catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// NEW: Filtered stats for admin dashboard cards
+app.get('/api/stats/filtered', requireAdmin, async (req, res) => {
+  const { period, start, end, purpose, college, employee_type } = req.query;
+
+  let dateFilter = '';
+  const params = [];
+
+  if (period === 'today') {
+    dateFilter = 'AND DATE(v.visit_date) = CURDATE()';
+  } else if (period === 'week') {
+    dateFilter = 'AND v.visit_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+  } else if (start && end) {
+    dateFilter = 'AND v.visit_date BETWEEN ? AND ?';
+    params.push(start, end);
+  }
+
+  const buildParams = (extras = []) => [...params, ...extras];
+
+  let purposeFilter   = purpose       ? 'AND v.purpose = ?'                              : '';
+  let collegeFilter   = college       ? 'AND s.college = ?'                              : '';
+  let employeeFilter  = employee_type === 'employee'
+    ? "AND s.type IN ('Faculty','Employee','Staff')"
+    : employee_type === 'student'
+    ? "AND s.type = 'Student'"
+    : '';
+
+  const allFilters = `${dateFilter} ${purposeFilter} ${collegeFilter} ${employeeFilter}`;
+
+  const fullParams = [
+    ...params,
+    ...(purpose ? [purpose] : []),
+    ...(college ? [college] : []),
+  ];
+
+  try {
+    const [totalVisits] = await db.pool.query(
+      `SELECT COUNT(*) as count FROM visits v
+       JOIN students s ON v.school_id = s.school_id
+       WHERE 1=1 ${allFilters}`, fullParams
+    );
+
+    const [byPurpose] = await db.pool.query(
+      `SELECT v.purpose, COUNT(*) as count FROM visits v
+       JOIN students s ON v.school_id = s.school_id
+       WHERE 1=1 ${dateFilter} ${collegeFilter} ${employeeFilter}
+       GROUP BY v.purpose ORDER BY count DESC`,
+      buildParams([...(college ? [college] : [])])
+    );
+
+    const [byCollege] = await db.pool.query(
+      `SELECT s.college, COUNT(*) as count FROM visits v
+       JOIN students s ON v.school_id = s.school_id
+       WHERE 1=1 ${dateFilter} ${purposeFilter} ${employeeFilter}
+       GROUP BY s.college ORDER BY count DESC LIMIT 10`,
+      buildParams([...(purpose ? [purpose] : [])])
+    );
+
+    const [byDay] = await db.pool.query(
+      `SELECT DATE(v.visit_date) as date, COUNT(*) as count FROM visits v
+       JOIN students s ON v.school_id = s.school_id
+       WHERE 1=1 ${allFilters}
+       GROUP BY DATE(v.visit_date) ORDER BY date ASC`, fullParams
+    );
+
+    const [empVsStudent] = await db.pool.query(
+      `SELECT
+         SUM(CASE WHEN s.type IN ('Faculty','Employee','Staff') THEN 1 ELSE 0 END) as employees,
+         SUM(CASE WHEN s.type = 'Student' THEN 1 ELSE 0 END) as students
+       FROM visits v
+       JOIN students s ON v.school_id = s.school_id
+       WHERE 1=1 ${dateFilter} ${purposeFilter} ${collegeFilter}`,
+      buildParams([...(purpose ? [purpose] : []), ...(college ? [college] : [])])
+    );
+
+    res.json({
+      totalVisits:     totalVisits[0].count,
+      byPurpose,
+      byCollege,
+      byDay,
+      employeeVsStudent: empVsStudent[0]
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/logs', async (req, res) => {
@@ -120,7 +303,6 @@ app.get('/api/students', async (req, res) => {
 });
 
 // ─── ADMIN — AUTH ─────────────────────────────────────────────────────────────
-
 app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
@@ -161,7 +343,6 @@ app.post('/api/admin/add', async (req, res) => {
 });
 
 // ─── ADMIN — BLOCK / UNBLOCK ──────────────────────────────────────────────────
-
 app.post('/api/student/:id/block', async (req, res) => {
   try {
     await db.setStudentBlocked(req.params.id.toUpperCase(), !!req.body.block);
@@ -170,7 +351,6 @@ app.post('/api/student/:id/block', async (req, res) => {
 });
 
 // ─── ADMIN — ANNOUNCEMENT ─────────────────────────────────────────────────────
-
 let announcement = { text: '', enabled: false };
 app.get('/api/announcement',  (req, res) => res.json(announcement));
 app.post('/api/announcement', (req, res) => {
@@ -179,7 +359,6 @@ app.post('/api/announcement', (req, res) => {
 });
 
 // ─── ADMIN — DATA MANAGEMENT ──────────────────────────────────────────────────
-
 app.post('/api/data/clear-logs', async (req, res) => {
   try {
     const queries = {
@@ -201,12 +380,14 @@ app.post('/api/data/reset-streaks', async (req, res) => {
 });
 
 // ─── PAGE ROUTES ──────────────────────────────────────────────────────────────
-
-app.get('/',      (req, res) => res.redirect('/entrance/index.html'));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
+app.get('/',        (req, res) => res.redirect('/entrance/index.html'));
+app.get('/login',   (req, res) => res.sendFile(path.join(__dirname, 'login', 'index.html')));
+app.get('/welcome', requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'user', 'index.html')));
+app.get('/admin',   requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
 
 app.listen(PORT, () => {
   console.log(`\n🏛️  NEU Library System running at http://localhost:${PORT}`);
   console.log(`📋  Entrance: http://localhost:${PORT}/entrance`);
-  console.log(`📊  Admin:    http://localhost:${PORT}/admin\n`);
+  console.log(`📊  Admin:    http://localhost:${PORT}/admin`);
+  console.log(`🔐  Login:    http://localhost:${PORT}/login\n`);
 });
