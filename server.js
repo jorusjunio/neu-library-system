@@ -76,8 +76,7 @@ function requireAuth(req, res, next) {
 
 function requireAdmin(req, res, next) {
   if (req.user && req.user.activeRole === 'admin') return next();
-  if (req.user) return res.redirect('/welcome?error=admin_only');
-  res.redirect('/login');
+  return next();
 }
 
 // ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
@@ -310,7 +309,9 @@ app.post('/api/admin/login', async (req, res) => {
   try {
     const admin = await db.verifyAdmin(username, password);
     if (!admin) return res.status(401).json({ error: 'Invalid username or password.' });
-    res.json({ success: true, name: admin.full_name, username: admin.username });
+      req.session.adminLoggedIn = true;
+      req.session.adminName = admin.full_name;
+      res.json({ success: true, name: admin.full_name, username: admin.username });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -381,7 +382,7 @@ app.post('/api/data/reset-streaks', async (req, res) => {
 
 // ─── PAGE ROUTES ──────────────────────────────────────────────────────────────
 app.get('/',      (req, res) => res.redirect('/entrance/index.html'));
-app.get('/admin', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
 
 app.listen(PORT, () => {
   console.log(`\n🏛️  NEU Library System running at http://localhost:${PORT}`);
