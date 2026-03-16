@@ -114,6 +114,7 @@ app.get('/api/me', (req, res) => {
 
 // ─── STATIC FILES ─────────────────────────────────────────────────────────────
 app.use('/entrance', express.static(path.join(__dirname, 'entrance')));
+app.use('/admin',    express.static(path.join(__dirname, 'admin')));
 app.use('/images',   express.static(path.join(__dirname, 'images')));
 
 // ─── SSE — Real-time broadcast ────────────────────────────────────────────────
