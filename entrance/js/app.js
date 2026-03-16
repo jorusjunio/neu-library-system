@@ -1,3 +1,13 @@
+// Show error if Google login was rejected
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('error') === 'noaccess') {
+  const toast = document.getElementById('googleErrorToast');
+  if (toast) {
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 5000);
+  }
+}
+
 // entrance/js/app.js
 
 const API_BASE = '/api';

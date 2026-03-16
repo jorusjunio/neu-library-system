@@ -914,3 +914,23 @@ html, body {
   transform: translateY(-1px);
 }
 .admin-google-btn img { width: 20px; height: 20px; }
+
+.google-error-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.35);
+  color: #f87171;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+}
+.google-error-toast.hidden { display: none; }
