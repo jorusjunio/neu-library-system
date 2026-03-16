@@ -93,7 +93,7 @@ app.get('/auth/google/callback',
 );
 
 app.get('/logout', (req, res) => {
-  req.logout(() => res.redirect('/login'));
+  req.logout(() => res.redirect('/entrance/index.html'));
 });
 
 app.post('/api/switch-role', (req, res) => {
@@ -115,8 +115,6 @@ app.get('/api/me', (req, res) => {
 // ─── STATIC FILES ─────────────────────────────────────────────────────────────
 app.use('/entrance', express.static(path.join(__dirname, 'entrance')));
 app.use('/images',   express.static(path.join(__dirname, 'images')));
-app.use('/login',    express.static(path.join(__dirname, 'login')));
-app.use('/user',     express.static(path.join(__dirname, 'user')));
 
 // ─── SSE — Real-time broadcast ────────────────────────────────────────────────
 let adminClients = [];
