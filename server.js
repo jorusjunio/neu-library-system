@@ -86,10 +86,10 @@ app.get('/auth/google',
 );
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login?error=unauthorized' }),
+  passport.authenticate('google', { failureRedirect: '/entrance/index.html?error=unauthorized' }),
   (req, res) => {
     if (req.user.activeRole === 'admin') return res.redirect('/admin');
-    res.redirect('/welcome');
+    res.redirect('/entrance/index.html');
   }
 );
 
@@ -380,14 +380,11 @@ app.post('/api/data/reset-streaks', async (req, res) => {
 });
 
 // ─── PAGE ROUTES ──────────────────────────────────────────────────────────────
-app.get('/',        (req, res) => res.redirect('/entrance/index.html'));
-app.get('/login',   (req, res) => res.sendFile(path.join(__dirname, 'login', 'index.html')));
-app.get('/welcome', requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'user', 'index.html')));
-app.get('/admin',   requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
+app.get('/',      (req, res) => res.redirect('/entrance/index.html'));
+app.get('/admin', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'admin', 'dashboard.html')));
 
 app.listen(PORT, () => {
   console.log(`\n🏛️  NEU Library System running at http://localhost:${PORT}`);
   console.log(`📋  Entrance: http://localhost:${PORT}/entrance`);
-  console.log(`📊  Admin:    http://localhost:${PORT}/admin`);
-  console.log(`🔐  Login:    http://localhost:${PORT}/login\n`);
+  console.log(`📊  Admin:    http://localhost:${PORT}/admin\n`);
 });
