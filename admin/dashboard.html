@@ -81,6 +81,28 @@
 
     <!-- ─── OVERVIEW TAB ─── -->
     <div class="tab-content active" id="tabOverview">
+
+      <!-- STAT FILTERS -->
+      <div class="stat-filter-bar" id="statFilterBar">
+        <span class="stat-filter-label">Filter by:</span>
+        <select class="stat-filter-select" id="filterPurpose">
+          <option value="">All Purposes</option>
+          <option value="Reading Books">Reading Books</option>
+          <option value="Thesis Research">Thesis Research</option>
+          <option value="Use of Computer">Use of Computer</option>
+          <option value="Doing Assignments">Doing Assignments</option>
+        </select>
+        <select class="stat-filter-select" id="filterCollege">
+          <option value="">All Colleges</option>
+        </select>
+        <select class="stat-filter-select" id="filterEmployeeType">
+          <option value="">All Visitors</option>
+          <option value="employee">Employees (Teachers & Staff)</option>
+          <option value="student">Students Only</option>
+        </select>
+        <button class="stat-filter-clear" id="filterClearBtn">✕ Clear Filters</button>
+      </div>
+
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-icon-wrap blue">👥</div>

@@ -38,20 +38,98 @@ const fetchLogs        = ()     => fetch(`${API}/logs?limit=500`).then(r => r.js
 const fetchTopVisitors = (s, e) => fetch(`${API}/top-visitors?start=${s}&end=${e}`).then(r => r.json());
 const fetchStudents    = ()     => fetch(`${API}/students`).then(r => r.json());
 
+// ─── FILTERS ─────────────────────────────────────────────────────────────────
+let activeFilters = { purpose: '', college: '', employee_type: '' };
+
+function getFilterParams() {
+  const params = new URLSearchParams();
+  const { start, end } = getDateRange(currentRange);
+  if (currentRange === 'today')  params.set('period', 'today');
+  else if (currentRange === 'week') params.set('period', 'week');
+  else { params.set('start', start); params.set('end', end); }
+  if (activeFilters.purpose)       params.set('purpose', activeFilters.purpose);
+  if (activeFilters.college)       params.set('college', activeFilters.college);
+  if (activeFilters.employee_type) params.set('employee_type', activeFilters.employee_type);
+  return params.toString();
+}
+
+function isFiltered() {
+  return activeFilters.purpose || activeFilters.college || activeFilters.employee_type;
+}
+
+async function populateCollegeFilter() {
+  const students = await fetchStudents();
+  const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
+  const sel = document.getElementById('filterCollege');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">All Colleges</option>';
+  colleges.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function initFilters() {
+  populateCollegeFilter();
+
+  ['filterPurpose', 'filterCollege', 'filterEmployeeType'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      activeFilters.purpose       = document.getElementById('filterPurpose').value;
+      activeFilters.college       = document.getElementById('filterCollege').value;
+      activeFilters.employee_type = document.getElementById('filterEmployeeType').value;
+      updateFilterClearBtn();
+      loadOverview();
+    });
+  });
+
+  document.getElementById('filterClearBtn')?.addEventListener('click', () => {
+    activeFilters = { purpose: '', college: '', employee_type: '' };
+    document.getElementById('filterPurpose').value       = '';
+    document.getElementById('filterCollege').value       = '';
+    document.getElementById('filterEmployeeType').value  = '';
+    updateFilterClearBtn();
+    loadOverview();
+  });
+}
+
+function updateFilterClearBtn() {
+  const btn = document.getElementById('filterClearBtn');
+  if (!btn) return;
+  btn.style.display = isFiltered() ? 'inline-flex' : 'none';
+}
+
 // ─── OVERVIEW ────────────────────────────────────────────────────────────────
 async function loadOverview() {
   const { start, end } = getDateRange(currentRange);
-  const stats = await fetchStats(start, end);
+
+  let stats;
+  if (isFiltered()) {
+    const res = await fetch(`${API}/stats/filtered?${getFilterParams()}`);
+    const filtered = await res.json();
+    // Map filtered response to same shape as regular stats
+    stats = {
+      totalVisits:   filtered.totalVisits,
+      uniqueVisitors: '—',
+      byPurpose:     filtered.byPurpose,
+      byCollege:     filtered.byCollege,
+      byDay:         filtered.byDay.map(r => ({ visit_date: r.date, count: r.count })),
+      byHour:        [],
+    };
+  } else {
+    stats = await fetchStats(start, end);
+  }
+
   currentStatsCache = { stats, start, end };
 
   document.getElementById('statTotal').textContent      = stats.totalVisits;
-  document.getElementById('statUnique').textContent     = stats.uniqueVisitors;
+  document.getElementById('statUnique').textContent     = isFiltered() ? '—' : stats.uniqueVisitors;
   document.getElementById('statTopPurpose').textContent = stats.byPurpose[0]?.purpose || '—';
   document.getElementById('statTopCollege').textContent = abbr(stats.byCollege[0]?.college || '—');
 
   renderChartDay(stats.byDay, start, end);
   renderChartPurpose(stats.byPurpose);
-  renderChartHour(stats.byHour);
+  if (!isFiltered()) renderChartHour(stats.byHour);
   renderChartCollege(stats.byCollege);
 }
 
@@ -924,4 +1002,6 @@ window.openSettingsModal = function(id) {
 };
 
 document.addEventListener('DOMContentLoaded', initDatePickers);
+document.addEventListener('DOMContentLoaded', initFilters);
 setTimeout(initDatePickers, 300);
+setTimeout(initFilters, 300);
