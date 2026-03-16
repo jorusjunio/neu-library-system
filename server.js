@@ -93,7 +93,12 @@ app.get('/auth/google/callback',
 );
 
 app.get('/logout', (req, res) => {
-  req.logout(() => res.redirect('/entrance/index.html'));
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect('/entrance/index.html');
+    });
+  });
 });
 
 app.post('/api/switch-role', (req, res) => {
