@@ -42,18 +42,17 @@ passport.use(new GoogleStrategy({
   }
 
   try {
-    await db.pool.query(`
-      INSERT INTO user_roles (email, google_id, name, picture, role)
-      VALUES (?, ?, ?, ?, 'user')
-      ON DUPLICATE KEY UPDATE
-        google_id = VALUES(google_id),
-        name      = VALUES(name),
-        picture   = VALUES(picture)
-    `, [email, profile.id, profile.displayName, profile.photos?.[0]?.value]);
-
     const [rows] = await db.pool.query(
       'SELECT * FROM user_roles WHERE email = ?', [email]
     );
+
+    // Only allow pre-approved emails
+    if (!rows[0]) return done(null, false, { message: 'Access denied.' });
+
+    // Update Google info
+    await db.pool.query(`
+      UPDATE user_roles SET google_id = ?, name = ?, picture = ? WHERE email = ?
+    `, [profile.id, profile.displayName, profile.photos?.[0]?.value, email]);
 
     const user = rows[0];
     return done(null, {
