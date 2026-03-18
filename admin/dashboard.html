@@ -86,41 +86,23 @@
       <div class="stat-filter-bar" id="statFilterBar">
         <span class="stat-filter-label">Filter by:</span>
 
-        <div class="custom-select" id="csPurpose">
-          <div class="cs-trigger">
-            <span class="cs-value" id="csPurposeVal">All Purposes</span>
-            <svg class="cs-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="cs-dropdown">
-            <div class="cs-option active" data-value="">All Purposes</div>
-            <div class="cs-option" data-value="Reading Books">📚 Reading Books</div>
-            <div class="cs-option" data-value="Thesis Research">🔬 Thesis Research</div>
-            <div class="cs-option" data-value="Use of Computer">💻 Use of Computer</div>
-            <div class="cs-option" data-value="Doing Assignments">📝 Doing Assignments</div>
-          </div>
-        </div>
+        <select class="stat-filter-select" id="filterPurpose">
+          <option value="">📋 All Purposes</option>
+          <option value="Reading Books">📚 Reading Books</option>
+          <option value="Thesis Research">🔬 Thesis Research</option>
+          <option value="Use of Computer">💻 Use of Computer</option>
+          <option value="Doing Assignments">📝 Doing Assignments</option>
+        </select>
 
-        <div class="custom-select" id="csCollege">
-          <div class="cs-trigger">
-            <span class="cs-value" id="csCollegeVal">All Colleges</span>
-            <svg class="cs-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="cs-dropdown" id="csCollegeList">
-            <div class="cs-option active" data-value="">All Colleges</div>
-          </div>
-        </div>
+        <select class="stat-filter-select" id="filterCollege">
+          <option value="">🏛️ All Colleges</option>
+        </select>
 
-        <div class="custom-select" id="csVisitorType">
-          <div class="cs-trigger">
-            <span class="cs-value" id="csVisitorTypeVal">All Visitors</span>
-            <svg class="cs-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="cs-dropdown">
-            <div class="cs-option active" data-value="">All Visitors</div>
-            <div class="cs-option" data-value="employee">👩‍🏫 Employees (Teachers & Staff)</div>
-            <div class="cs-option" data-value="student">🎓 Students Only</div>
-          </div>
-        </div>
+        <select class="stat-filter-select" id="filterEmployeeType">
+          <option value="">👥 All Visitors</option>
+          <option value="employee">👩‍🏫 Employees (Teachers & Staff)</option>
+          <option value="student">🎓 Students Only</option>
+        </select>
 
         <button class="stat-filter-clear" id="filterClearBtn">✕ Clear</button>
       </div>

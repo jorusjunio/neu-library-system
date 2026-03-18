@@ -92,7 +92,7 @@ async function updateStudentVisitStats(schoolId) {
 async function recordVisit(schoolId, purpose) {
   const now  = new Date();
   const visitDate = todayStr();
-  const visitTime = now.toTimeString().split(' ')[0];
+  const visitTime = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Manila' });
 
   const [result] = await pool.query(
     'INSERT INTO visits (school_id, purpose, visit_date, visit_time) VALUES (?, ?, ?, ?)',
@@ -219,7 +219,7 @@ async function setStudentBlocked(schoolId, block) {
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function todayStr() {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
 }
 
 function dateDiff(dateA, dateB) {

@@ -229,7 +229,7 @@ body::after {
   left: var(--sidebar-w);
   right: 0;
   bottom: 0;
-  overflow-y: auto; overflow-x: hidden;
+  overflow-y: auto; overflow-x: visible;
   padding: 24px 28px;
   z-index: 10;
   background: transparent;
@@ -1122,6 +1122,7 @@ span.flatpickr-weekday {
   background: rgba(74,158,255,0.1);
 }
 
+
 /* ══════════════════════════════════════
    STAT FILTER BAR
 ══════════════════════════════════════ */
@@ -1150,139 +1151,65 @@ span.flatpickr-weekday {
   padding-right: 4px;
 }
 
-/* ── Custom Select ── */
-.custom-select {
-  position: relative;
-  min-width: 148px;
-  user-select: none;
-}
-
-.cs-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 7px 12px;
-  background: rgba(255,255,255,0.045);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(12px);
-}
-
-.cs-trigger:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.15);
-}
-
-.custom-select.open .cs-trigger {
-  background: rgba(74,158,255,0.1);
-  border-color: rgba(74,158,255,0.35);
-}
-
-.custom-select.has-value .cs-trigger {
-  background: rgba(74,158,255,0.1);
-  border-color: rgba(74,158,255,0.35);
-}
-
-.cs-value {
-  font-family: var(--font);
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.65);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.custom-select.has-value .cs-value {
-  color: var(--blue);
-}
-
-.cs-arrow {
-  width: 12px; height: 12px;
-  color: rgba(255,255,255,0.3);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.custom-select.open .cs-arrow {
-  transform: rotate(180deg);
-  color: var(--blue);
-}
-
-/* ── Dropdown panel ── */
-.cs-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 100%;
-  background: rgba(10, 16, 32, 0.85);
+.stat-filter-select {
+  background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-  z-index: 999;
-  overflow: hidden;
-  animation: csDropIn 0.18s cubic-bezier(0.34,1.28,0.64,1) both;
-}
-
-@keyframes csDropIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.custom-select.open .cs-dropdown {
-  display: block;
-}
-
-.cs-option {
-  padding: 9px 14px;
+  border-radius: 10px;
+  padding: 7px 12px;
+  color: rgba(255,255,255,0.75);
   font-family: var(--font);
   font-size: 11px;
   font-weight: 500;
-  color: rgba(255,255,255,0.55);
   cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  outline: none;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 28px;
+  min-width: 150px;
 }
 
-.cs-option:hover {
-  background: rgba(74,158,255,0.12);
-  color: rgba(255,255,255,0.92);
-  padding-left: 18px;
+.stat-filter-select:hover {
+  background-color: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.95);
 }
 
-.cs-option.active {
-  color: var(--blue);
-  background: rgba(74,158,255,0.08);
+.stat-filter-select:focus {
+  border-color: rgba(74,158,255,0.5);
+  background-color: rgba(74,158,255,0.08);
+  color: rgba(255,255,255,0.95);
 }
 
-/* ── Clear Button ── */
+.stat-filter-select option {
+  background: #0d1628;
+  color: rgba(255,255,255,0.85);
+  padding: 8px;
+}
+
 .stat-filter-clear {
   display: none;
   align-items: center;
   gap: 5px;
-  background: rgba(248,113,113,0.07);
-  border: 1px solid rgba(248,113,113,0.18);
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
   border-radius: 10px;
   padding: 7px 14px;
-  color: rgba(248,113,113,0.75);
+  color: rgba(248,113,113,0.8);
   font-family: var(--font);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.3px;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-left: auto;
-  backdrop-filter: blur(12px);
 }
 
 .stat-filter-clear:hover {
   background: rgba(248,113,113,0.15);
-  border-color: rgba(248,113,113,0.35);
+  border-color: rgba(248,113,113,0.4);
   color: var(--red);
 }

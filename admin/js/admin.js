@@ -25,7 +25,7 @@ let currentStatsCache = null;
 // ─── DATE RANGE ───────────────────────────────────────────────────────────────
 function getDateRange(range) {
   const today = new Date();
-  const fmt = d => d.toISOString().split('T')[0];
+  const fmt = d => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
   if (range === 'today')  return { start: fmt(today), end: fmt(today) };
   if (range === 'week')   { const s = new Date(today); s.setDate(today.getDate()-6); return { start: fmt(s), end: fmt(today) }; }
   if (range === 'month')  return { start: fmt(new Date(today.getFullYear(), today.getMonth(), 1)), end: fmt(today) };
@@ -62,88 +62,49 @@ function updateFilterClearBtn() {
   if (btn) btn.style.display = isFiltered() ? 'inline-flex' : 'none';
 }
 
-function initCustomSelect(wrapperId, valueId, filterKey) {
-  const wrapper  = document.getElementById(wrapperId);
-  if (!wrapper) return;
-  const trigger  = wrapper.querySelector('.cs-trigger');
-  const dropdown = wrapper.querySelector('.cs-dropdown');
-  const valueEl  = document.getElementById(valueId);
-
-  trigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    // Close all others
-    document.querySelectorAll('.custom-select.open').forEach(el => {
-      if (el !== wrapper) el.classList.remove('open');
-    });
-    wrapper.classList.toggle('open');
-  });
-
-  dropdown.addEventListener('click', (e) => {
-    const opt = e.target.closest('.cs-option');
-    if (!opt) return;
-    const val = opt.dataset.value;
-
-    // Update active state
-    dropdown.querySelectorAll('.cs-option').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
-
-    // Update display
-    valueEl.textContent = opt.textContent.replace(/^[^\w]*/, '').trim();
-    activeFilters[filterKey] = val;
-    wrapper.classList.toggle('has-value', !!val);
-    wrapper.classList.remove('open');
-
-    updateFilterClearBtn();
-    loadOverview();
-  });
-}
+function initCustomSelect(wrapperId, valueId, filterKey) {}
 
 async function populateCollegeFilter() {
-  const students = await fetchStudents();
-  const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
-  const list = document.getElementById('csCollegeList');
-  if (!list) return;
-  list.innerHTML = '<div class="cs-option active" data-value="">All Colleges</div>';
-  colleges.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'cs-option';
-    div.dataset.value = c;
-    div.textContent = c;
-    list.appendChild(div);
-  });
+  try {
+    const students = await fetchStudents();
+    const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
+    const sel = document.getElementById('filterCollege');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">🏛️ All Colleges</option>';
+    colleges.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
 }
 
 function initFilters() {
   populateCollegeFilter();
-  initCustomSelect('csPurpose',     'csPurposeVal',     'purpose');
-  initCustomSelect('csCollege',     'csCollegeVal',     'college');
-  initCustomSelect('csVisitorType', 'csVisitorTypeVal', 'employee_type');
 
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
+  ['filterPurpose', 'filterCollege', 'filterEmployeeType'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      activeFilters.purpose       = document.getElementById('filterPurpose').value;
+      activeFilters.college       = document.getElementById('filterCollege').value;
+      activeFilters.employee_type = document.getElementById('filterEmployeeType').value;
+      updateFilterClearBtn();
+      loadOverview();
+    });
   });
 
-  // Clear all filters
   document.getElementById('filterClearBtn')?.addEventListener('click', () => {
     activeFilters = { purpose: '', college: '', employee_type: '' };
-    [
-      { id: 'csPurpose',     valId: 'csPurposeVal',     def: 'All Purposes' },
-      { id: 'csCollege',     valId: 'csCollegeVal',     def: 'All Colleges' },
-      { id: 'csVisitorType', valId: 'csVisitorTypeVal', def: 'All Visitors' },
-    ].forEach(({ id, valId, def }) => {
-      const w = document.getElementById(id);
-      if (w) {
-        w.classList.remove('has-value', 'open');
-        w.querySelectorAll('.cs-option').forEach((o, i) => o.classList.toggle('active', i === 0));
-      }
-      const v = document.getElementById(valId);
-      if (v) v.textContent = def;
-    });
+    document.getElementById('filterPurpose').value      = '';
+    document.getElementById('filterCollege').value      = '';
+    document.getElementById('filterEmployeeType').value = '';
     updateFilterClearBtn();
     loadOverview();
   });
 }
+
+async function populateCollegeFilterOld() {}
+
+function initFiltersOld() {}
 
 // ─── OVERVIEW ────────────────────────────────────────────────────────────────
 async function loadOverview() {

@@ -208,7 +208,7 @@ app.get('/api/stats/filtered', requireAdmin, async (req, res) => {
   const params = [];
 
   if (period === 'today') {
-    dateFilter = 'AND DATE(v.visit_date) = CURDATE()';
+    dateFilter = "AND DATE(v.visit_date) = DATE(CONVERT_TZ(NOW(), 'UTC', 'Asia/Manila'))";
   } else if (period === 'week') {
     dateFilter = 'AND v.visit_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
   } else if (start && end) {
