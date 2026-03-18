@@ -38,18 +38,18 @@ const fetchLogs        = ()     => fetch(`${API}/logs?limit=500`).then(r => r.js
 const fetchTopVisitors = (s, e) => fetch(`${API}/top-visitors?start=${s}&end=${e}`).then(r => r.json());
 const fetchStudents    = ()     => fetch(`${API}/students`).then(r => r.json());
 
-// ─── FILTERS ─────────────────────────────────────────────────────────────────
+// ─── CUSTOM SELECT / FILTERS ──────────────────────────────────────────────────
 let activeFilters = { purpose: '', college: '', employee_type: '' };
 
 function getFilterParams() {
   const params = new URLSearchParams();
   const { start, end } = getDateRange(currentRange);
-  if (currentRange === 'today')  params.set('period', 'today');
-  else if (currentRange === 'week') params.set('period', 'week');
-  else { params.set('start', start); params.set('end', end); }
-  if (activeFilters.purpose)       params.set('purpose', activeFilters.purpose);
-  if (activeFilters.college)       params.set('college', activeFilters.college);
-  if (activeFilters.employee_type) params.set('employee_type', activeFilters.employee_type);
+  if (currentRange === 'today')       params.set('period', 'today');
+  else if (currentRange === 'week')   params.set('period', 'week');
+  else { params.set('start', start);  params.set('end', end); }
+  if (activeFilters.purpose)          params.set('purpose', activeFilters.purpose);
+  if (activeFilters.college)          params.set('college', activeFilters.college);
+  if (activeFilters.employee_type)    params.set('employee_type', activeFilters.employee_type);
   return params.toString();
 }
 
@@ -57,54 +57,92 @@ function isFiltered() {
   return activeFilters.purpose || activeFilters.college || activeFilters.employee_type;
 }
 
-async function populateCollegeFilter() {
-  const students = await fetchStudents();
-  const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
-  const sel = document.getElementById('filterCollege');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">All Colleges</option>';
-  colleges.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c; opt.textContent = c;
-    sel.appendChild(opt);
-  });
+function updateFilterClearBtn() {
+  const btn = document.getElementById('filterClearBtn');
+  if (btn) btn.style.display = isFiltered() ? 'inline-flex' : 'none';
 }
 
-function initFilters() {
-  populateCollegeFilter();
+function initCustomSelect(wrapperId, valueId, filterKey) {
+  const wrapper  = document.getElementById(wrapperId);
+  if (!wrapper) return;
+  const trigger  = wrapper.querySelector('.cs-trigger');
+  const dropdown = wrapper.querySelector('.cs-dropdown');
+  const valueEl  = document.getElementById(valueId);
 
-  ['filterPurpose', 'filterCollege', 'filterEmployeeType'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', () => {
-      activeFilters.purpose       = document.getElementById('filterPurpose').value;
-      activeFilters.college       = document.getElementById('filterCollege').value;
-      activeFilters.employee_type = document.getElementById('filterEmployeeType').value;
-      // Highlight active dropdowns
-      ['filterPurpose','filterCollege','filterEmployeeType'].forEach(sid => {
-        const el = document.getElementById(sid);
-        if (el) el.classList.toggle('active-filter', !!el.value);
-      });
-      updateFilterClearBtn();
-      loadOverview();
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Close all others
+    document.querySelectorAll('.custom-select.open').forEach(el => {
+      if (el !== wrapper) el.classList.remove('open');
     });
+    wrapper.classList.toggle('open');
   });
 
-  document.getElementById('filterClearBtn')?.addEventListener('click', () => {
-    activeFilters = { purpose: '', college: '', employee_type: '' };
-    document.getElementById('filterPurpose').value       = '';
-    document.getElementById('filterCollege').value       = '';
-    document.getElementById('filterEmployeeType').value  = '';
-    ['filterPurpose','filterCollege','filterEmployeeType'].forEach(sid => {
-      document.getElementById(sid)?.classList.remove('active-filter');
-    });
+  dropdown.addEventListener('click', (e) => {
+    const opt = e.target.closest('.cs-option');
+    if (!opt) return;
+    const val = opt.dataset.value;
+
+    // Update active state
+    dropdown.querySelectorAll('.cs-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+
+    // Update display
+    valueEl.textContent = opt.textContent.replace(/^[^\w]*/, '').trim();
+    activeFilters[filterKey] = val;
+    wrapper.classList.toggle('has-value', !!val);
+    wrapper.classList.remove('open');
+
     updateFilterClearBtn();
     loadOverview();
   });
 }
 
-function updateFilterClearBtn() {
-  const btn = document.getElementById('filterClearBtn');
-  if (!btn) return;
-  btn.style.display = isFiltered() ? 'inline-flex' : 'none';
+async function populateCollegeFilter() {
+  const students = await fetchStudents();
+  const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
+  const list = document.getElementById('csCollegeList');
+  if (!list) return;
+  list.innerHTML = '<div class="cs-option active" data-value="">All Colleges</div>';
+  colleges.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'cs-option';
+    div.dataset.value = c;
+    div.textContent = c;
+    list.appendChild(div);
+  });
+}
+
+function initFilters() {
+  populateCollegeFilter();
+  initCustomSelect('csPurpose',     'csPurposeVal',     'purpose');
+  initCustomSelect('csCollege',     'csCollegeVal',     'college');
+  initCustomSelect('csVisitorType', 'csVisitorTypeVal', 'employee_type');
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
+  });
+
+  // Clear all filters
+  document.getElementById('filterClearBtn')?.addEventListener('click', () => {
+    activeFilters = { purpose: '', college: '', employee_type: '' };
+    [
+      { id: 'csPurpose',     valId: 'csPurposeVal',     def: 'All Purposes' },
+      { id: 'csCollege',     valId: 'csCollegeVal',     def: 'All Colleges' },
+      { id: 'csVisitorType', valId: 'csVisitorTypeVal', def: 'All Visitors' },
+    ].forEach(({ id, valId, def }) => {
+      const w = document.getElementById(id);
+      if (w) {
+        w.classList.remove('has-value', 'open');
+        w.querySelectorAll('.cs-option').forEach((o, i) => o.classList.toggle('active', i === 0));
+      }
+      const v = document.getElementById(valId);
+      if (v) v.textContent = def;
+    });
+    updateFilterClearBtn();
+    loadOverview();
+  });
 }
 
 // ─── OVERVIEW ────────────────────────────────────────────────────────────────
@@ -113,16 +151,15 @@ async function loadOverview() {
 
   let stats;
   if (isFiltered()) {
-    const res = await fetch(`${API}/stats/filtered?${getFilterParams()}`);
+    const res      = await fetch(`${API}/stats/filtered?${getFilterParams()}`);
     const filtered = await res.json();
-    // Map filtered response to same shape as regular stats
     stats = {
-      totalVisits:   filtered.totalVisits,
+      totalVisits:    filtered.totalVisits,
       uniqueVisitors: '—',
-      byPurpose:     filtered.byPurpose,
-      byCollege:     filtered.byCollege,
-      byDay:         filtered.byDay.map(r => ({ visit_date: r.date, count: r.count })),
-      byHour:        [],
+      byPurpose:      filtered.byPurpose,
+      byCollege:      filtered.byCollege,
+      byDay:          filtered.byDay.map(r => ({ visit_date: r.date, count: r.count })),
+      byHour:         [],
     };
   } else {
     stats = await fetchStats(start, end);
