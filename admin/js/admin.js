@@ -2,6 +2,27 @@
 
 const API = '/api';
 
+// ─── TOAST NOTIFICATION ───────────────────────────────────────────────────────
+function showToast(message, type = 'success') {
+  const existing = document.querySelector('.neu-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = `neu-toast neu-toast-${type}`;
+  toast.innerHTML = `
+    <span class="neu-toast-icon">${type === 'success' ? '✓' : '⚠'}</span>
+    <span class="neu-toast-msg">${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('neu-toast-show'));
+
+  setTimeout(() => {
+    toast.classList.remove('neu-toast-show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
 // ─── CHART DEFAULTS ───────────────────────────────────────────────────────────
 Chart.defaults.color = 'rgba(255,255,255,0.3)';
 Chart.defaults.font.family = "'Sora', sans-serif";
@@ -860,13 +881,13 @@ function wireSettingsListeners() {
     if (!confirm('Clear selected logs? This cannot be undone.')) return;
     const res  = await fetch('/api/data/clear-logs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type}) });
     const data = await res.json();
-    alert(res.ok ? `✓ ${data.deleted} logs deleted.` : 'Error: ' + data.error);
+    showToast(res.ok ? `✓ ${data.deleted} logs deleted.` : 'Error: ' + data.error, res.ok ? 'success' : 'error');
     if (res.ok) loadLogs();
   });
   document.getElementById('resetStreaksBtn')?.addEventListener('click', async () => {
     if (!confirm('Reset all streaks to 0?')) return;
     const res = await fetch('/api/data/reset-streaks', { method:'POST' });
-    alert(res.ok ? '✓ All streaks reset.' : 'Error resetting streaks.');
+    showToast(res.ok ? '✓ All streaks reset.' : 'Error resetting streaks.', res.ok ? 'success' : 'error');
   });
 
   // Theme
