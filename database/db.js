@@ -145,11 +145,11 @@ async function getStatsByRange(startDate, endDate) {
 
   // Format dates for JSON
   const byDayFormatted = byDay.map(r => ({
-    ...r,
-    visit_date: r.visit_date instanceof Date
-      ? r.visit_date.toISOString().split('T')[0]
-      : r.visit_date,
-  }));
+  ...r,
+  visit_date: r.visit_date instanceof Date
+    ? r.visit_date.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+    : r.visit_date,
+}));
 
   return { totalVisits, uniqueVisitors, byPurpose, byCollege, byDay: byDayFormatted, byHour };
 }
