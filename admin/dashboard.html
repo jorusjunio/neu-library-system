@@ -44,14 +44,23 @@
     </nav>
 
     <div class="sidebar-bottom">
-  <div class="sidebar-status">
-    <span class="status-dot"></span>
-    <span class="status-text">System Online</span>
-  </div>
-  <a class="nav-item" href="/logout" style="color:rgba(248,113,113,0.8);">
-    <span class="nav-icon">🔓</span><span>Sign Out</span>
-  </a>
-</div>
+
+      <!-- Logged-in user info -->
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-avatar-wrap">
+          <div class="sidebar-user-avatar" id="sidebarAvatar">👤</div>
+          <span class="sidebar-online-dot"></span>
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+          <div class="sidebar-user-email" id="sidebarEmail"></div>
+        </div>
+      </div>
+
+      <a class="nav-item" href="/logout" style="color:rgba(248,113,113,0.8);">
+        <span class="nav-icon">🔓</span><span>Sign Out</span>
+      </a>
+    </div>
   </aside>
 
   <!-- ─── MAIN ─── -->

@@ -1032,3 +1032,20 @@ document.addEventListener('DOMContentLoaded', initDatePickers);
 document.addEventListener('DOMContentLoaded', initFilters);
 setTimeout(initDatePickers, 300);
 setTimeout(initFilters, 300);
+
+// ─── SIDEBAR USER INFO ────────────────────────────────────────────────────────
+(async function loadSidebarUser() {
+  try {
+    const res  = await fetch('/api/me');
+    const user = await res.json();
+    if (!user || user.error) return;
+
+    document.getElementById('sidebarName').textContent  = user.name  || 'Admin';
+    document.getElementById('sidebarEmail').textContent = user.email || '';
+
+    if (user.picture) {
+      const avatarEl = document.getElementById('sidebarAvatar');
+      avatarEl.innerHTML = `<img src="${user.picture}" alt="avatar">`;
+    }
+  } catch (e) {}
+})();
