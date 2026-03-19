@@ -112,8 +112,19 @@ app.post('/api/switch-role', (req, res) => {
 });
 
 app.get('/api/me', (req, res) => {
-  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
-  res.json(req.user);
+  // Google OAuth login
+  if (req.user) return res.json(req.user);
+  // Username/password login
+  if (req.session && req.session.adminLoggedIn) {
+    return res.json({
+      name:       req.session.adminName || 'Admin',
+      email:      req.session.adminUsername || 'Administrator',
+      picture:    null,
+      role:       'admin',
+      activeRole: 'admin'
+    });
+  }
+  res.status(401).json({ error: 'Not logged in' });
 });
 
 // ─── STATIC FILES ─────────────────────────────────────────────────────────────
@@ -314,6 +325,7 @@ app.post('/api/admin/login', async (req, res) => {
     if (!admin) return res.status(401).json({ error: 'Invalid username or password.' });
       req.session.adminLoggedIn = true;
       req.session.adminName = admin.full_name;
+      req.session.adminUsername = admin.username;
       res.json({ success: true, name: admin.full_name, username: admin.username });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
