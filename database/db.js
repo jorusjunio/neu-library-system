@@ -27,6 +27,29 @@ async function testConnection() {
 }
 testConnection();
 
+async function syncGoogleUser(email, googleName) {
+  const trimmedEmail = email.trim().toLowerCase();
+
+  // 1. I-update ang pangalan sa students table kung saan match ang email
+  await pool.query(
+    `UPDATE students SET name = ? WHERE LOWER(email) = ?`,
+    [googleName, trimmedEmail]
+  );
+
+  // 2. I-update din sa user_roles para synchronized ang Admin name
+  await pool.query(
+    `UPDATE user_roles SET name = ? WHERE LOWER(email) = ?`,
+    [googleName, trimmedEmail]
+  );
+
+  // 3. I-return ang updated record para sa session
+  const [rows] = await pool.query(
+    'SELECT * FROM students WHERE LOWER(email) = ?',
+    [trimmedEmail]
+  );
+  return rows[0] || null;
+}
+
 // ─── STUDENT FUNCTIONS ────────────────────────────────────────────────────────
 
 async function getStudentById(schoolId) {
